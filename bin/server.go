@@ -14,16 +14,11 @@ import (
 	"github.com/vincent-petithory/dataurl"
 )
 
-type Request struct {
-	ImageDataURI string `json:"image_data_uri"`
-	Lang         string `json:"lang"`
-}
-
 func OCRHandler(c echo.Context) error {
-	request := new(Request)
-	c.Bind(request)
+	image := c.FormValue("image")
+	lang := c.FormValue("lang")
 
-	dataURL, err := dataurl.DecodeString(request.ImageDataURI)
+	dataURL, err := dataurl.DecodeString(image)
 	if err != nil {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
@@ -58,7 +53,7 @@ func OCRHandler(c echo.Context) error {
 	defer os.Remove(outputFile.Name())
 	outputFile.Close()
 
-	command := exec.Command("tesseract", file.Name(), outputFile.Name(), "-l", request.Lang)
+	command := exec.Command("tesseract", file.Name(), outputFile.Name(), "-l", lang)
 
 	output, err := command.CombinedOutput()
 	if err != nil {
